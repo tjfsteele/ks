@@ -64,7 +64,7 @@
 
     <script>
         // Update this URL with your Google Script URL + ?type=score
-        var PROXY_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE?type=score"; 
+        var PROXY_URL = "https://script.google.com/macros/s/AKfycby4NUTtYKqTj-WDwW1ozmd5tozAqOyGgKxhV90XBfMqvT0jX2vj7p21IqG5c_E10N3C/exec?type=score"; 
 
         function fetchData() {
             // Apply Jitter to prevent screen ghosting
@@ -85,7 +85,7 @@
                             var idx = mapping[i];
                             var element = document.getElementById('v-' + idx);
                             if (element) {
-                                element.innerHTML = (data[idx] !== undefined && data[idx] !== null) ? data[idx] : "0";
+                                element.innerHTML = (data[idx] !== undefined && data[idx] !== null) ? data[idx] : "";
                             }
                         }
                         var now = new Date();
@@ -115,8 +115,8 @@
 
         // Update score every 30 seconds
         setInterval(fetchData, 30000);
-        // Update clock every second
-        setInterval(updateClock, 1000);
+        // Update clock every 30 seconds
+        setInterval(updateClock, 30000);
 
         // Initial run
         fetchData();

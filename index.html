@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cricket Scoreboard - Kobo Edition</title>
+    <meta http-equiv="refresh" content="300">
+    <style>
+        body { 
+            background: white; color: black; font-family: sans-serif; 
+            margin: 0; padding: 5px; text-align: center;
+            display: flex; flex-direction: column; justify-content: center; height: 100vh;
+            overflow: hidden;
+        }
+        #jitter-wrapper { position: relative; width: 100%; }
+        
+        /* Layout Grid using Table for old browser compatibility */
+        .grid { display: table; width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .row { display: table-row; }
+        .cell { 
+            display: table-cell; border: 1px solid black; 
+            padding: 8px; vertical-align: middle; 
+        }
+        
+        /* Labels and Values */
+        .label { font-size: 14px; font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .value { font-size: 38px; font-weight: bold; font-family: monospace; }
+        .big-val { font-size: 55px; line-height: 1; }
+        
+        #time-status { font-size: 16px; margin-top: 15px; color: #666; font-style: italic; }
+        #clock { font-size: 28px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="jitter-wrapper">
+        <div class="grid">
+            <div class="row">
+                <div class="cell"><span class="label">Batter 1</span><span id="v-0" class="value">0</span></div>
+                <div class="cell"><span id="clock">00:00</span></div>
+                <div class="cell"><span class="label">Batter 2</span><span id="v-1" class="value">0</span></div>
+            </div>
+
+            <div class="row">
+                <div class="cell"><span class="label">TOTAL</span><span id="v-4" class="value big-val">0</span></div>
+                <div class="cell"><span class="label">WKTS</span><span id="v-5" class="value big-val">0</span></div>
+                <div class="cell"><span class="label">OVERS</span><span id="v-6" class="value big-val">0</span></div>
+            </div>
+
+            <div class="row">
+                <div class="cell"><span class="label">EXTRAS</span><span id="v-7" class="value">0</span></div>
+                <div class="cell"><span class="label">LAST MAN</span><span id="v-8" class="value">0</span></div>
+                <div class="cell"><span class="label">LAST WKT</span><span id="v-9" class="value">0</span></div>
+            </div>
+
+            <div class="row">
+                <div class="cell"><span class="label">1st INNS</span><span id="v-10" class="value">0</span></div>
+                <div class="cell"><span class="label">TO WIN</span><span id="v-11" class="value">0</span></div>
+                <div class="cell"><span class="label">OV REM</span><span id="v-12" class="value">0</span></div>
+            </div>
+        </div>
+
+        <div id="time-status">Connecting...</div>
+    </div>
+
+    <script>
+        // Update this URL with your Google Script URL + ?type=score
+        var PROXY_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE?type=score"; 
+
+        function fetchData() {
+            // Apply Jitter to prevent screen ghosting
+            var wrapper = document.getElementById('jitter-wrapper');
+            var randomX = Math.floor(Math.random() * 11) - 5; // -5 to +5px
+            var randomY = Math.floor(Math.random() * 11) - 5;
+            wrapper.style.transform = "translate(" + randomX + "px," + randomY + "px)";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", PROXY_URL + "&cb=" + new Date().getTime(), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        // All indices from your original list
+                        var mapping = [0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                        for (var i = 0; i < mapping.length; i++) {
+                            var idx = mapping[i];
+                            var element = document.getElementById('v-' + idx);
+                            if (element) {
+                                element.innerHTML = (data[idx] !== undefined && data[idx] !== null) ? data[idx] : "0";
+                            }
+                        }
+                        var now = new Date();
+                        var m = now.getMinutes();
+                        document.getElementById('time-status').innerHTML = "Last Update: " + now.getHours() + ":" + (m < 10 ? '0' : '') + m;
+                    } catch(e) {
+                        document.getElementById('time-status').innerHTML = "Data Error";
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function updateClock() {
+            var now = new Date();
+            var h = now.getHours();
+            var m = now.getMinutes();
+            document.getElementById('clock').innerHTML = h + ":" + (m < 10 ? '0' : '') + m;
+        }
+
+        // Keep Wi-Fi alive (Heartbeat) every 3 minutes
+        setInterval(function() {
+            var ping = new XMLHttpRequest();
+            ping.open("GET", "https://www.google.com/generate_204", true);
+            ping.send();
+        }, 180000);
+
+        // Update score every 30 seconds
+        setInterval(fetchData, 30000);
+        // Update clock every second
+        setInterval(updateClock, 1000);
+
+        // Initial run
+        fetchData();
+        updateClock();
+    </script>
+</body>
+</html>
